@@ -4,7 +4,6 @@ import { DocumentClient } from "aws-sdk/clients/dynamodb";
 import { createLogger } from "../utils/logger";
 import { TodoItem } from "../models/TodoItem";
 import { TodoUpdate } from "../models/TodoUpdate";
-import { cache } from "middy/middlewares";
 
 const XAWS = AWSXRay.captureAWS(AWS);
 
