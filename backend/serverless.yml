@@ -1,7 +1,3 @@
-org: gdngothehieu
-app: serverless-super-app-immortal
-service: serverless-todo-app
-
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
@@ -51,11 +47,7 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-    iamRoleStatements: # here
-      # - Effect: Allow
-      #   Action:
-      #   - s3:GetObject
-      #   Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
+    iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
