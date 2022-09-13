@@ -8,15 +8,14 @@ import { createTodo } from "../../helpers/todos";
 import { createLogger } from "../../utils/logger";
 
 const logger = createLogger("createTodo");
+// TODO: Implement creating a new TODO item
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const newTodo: CreateTodoRequest = JSON.parse(event.body);
-    // TODO: Implement creating a new TODO item
     logger.info(`Processing event: ${event}`);
 
     const userId = getUserId(event);
-    //const newTodo: CreateTodoRequest = JSON.parse(event.body)
     const newItem = await createTodo(newTodo, userId);
 
     return {

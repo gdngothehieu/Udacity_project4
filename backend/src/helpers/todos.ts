@@ -5,15 +5,13 @@ import { CreateTodoRequest } from "../requests/CreateTodoRequest";
 import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 import { createLogger } from "../utils/logger";
 import * as uuid from "uuid";
-// TODO: Implement businessLogic
+// TODO: Implement todos businesslogic
 
 const todosAccess = new TodosAccess();
 const attachmentUtils = new AttachmentUtils();
 const logger = createLogger("todos");
 
 export const getTodos = async (userId: string): Promise<TodoItem[]> => {
-  logger.info(`Getting todos for ${userId}`);
-
   return await todosAccess.getTodos(userId);
 };
 
