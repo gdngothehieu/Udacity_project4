@@ -69,11 +69,9 @@ async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const signingKey = keys.find((key) => key.kid === jwt.header.kid);
   let certValue: string = signingKey.x5c[0];
   certValue = certValue.match(/.{1,64}/g).join("\n");
-  const finalCertKey: string = `-----BEGIN CERTIFICATE-----\n${certValue}\n-----END CERTIFICATE-----\n`;
-  logger.info(
-    "finalCertKey - " + util.inspect(finalCertKey, false, null, true)
-  );
-  let jwtPayload: JwtPayload = verify(token, finalCertKey, {
+  const certKey: string = `-----BEGIN CERTIFICATE-----\n${certValue}\n-----END CERTIFICATE-----\n`;
+  logger.info("certKey - " + util.inspect(certKey, false, null, true));
+  let jwtPayload: JwtPayload = verify(token, certKey, {
     algorithms: ["RS256"],
   }) as JwtPayload;
   return jwtPayload;

@@ -16,7 +16,7 @@ export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const todoId = event.pathParameters.todoId;
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body);
-    logger.info("Processing event: ", event);
+    logger.info("Processing event");
 
     const userId = getUserId(event);
     const response = await updateTodo(userId, todoId, updatedTodo);

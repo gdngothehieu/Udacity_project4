@@ -19,27 +19,35 @@ export async function createTodo(
   createTodoRequest: CreateTodoRequest,
   userId: string
 ): Promise<TodoItem> {
-  logger.info(`Creating todo for ${userId}`);
-  const todoId = uuid.v4();
+  try {
+    logger.info(`Creating a To Do item `);
+    const todoId = uuid.v4();
 
-  return await todosAccess.createTodo({
-    todoId: todoId,
-    userId: userId,
-    done: false,
-    attachmentUrl: "",
-    createdAt: new Date().toISOString(),
-    name: createTodoRequest.name,
-    dueDate: createTodoRequest.dueDate,
-  });
+    return await todosAccess.createTodo({
+      todoId: todoId,
+      userId: userId,
+      done: false,
+      attachmentUrl: "",
+      createdAt: new Date().toISOString(),
+      name: createTodoRequest.name,
+      dueDate: createTodoRequest.dueDate,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export const getTodo = async (
   todoId: string,
   userId: string
 ): Promise<TodoItem> => {
-  logger.info(`Getting todo ${todoId}`);
+  try {
+    logger.info(`Getting todo item`);
 
-  return await todosAccess.getTodo(todoId, userId);
+    return await todosAccess.getTodo(todoId, userId);
+  } catch (e) {
+    console.log(e);
+  }
 };
 
 export async function updateTodo(
@@ -47,15 +55,19 @@ export async function updateTodo(
   todoId: string,
   updateTodoRequest: UpdateTodoRequest
 ) {
-  logger.info(`Update todo ${todoId} for user ${userId}`);
-  const item = await todosAccess.getTodo(todoId, userId);
+  try {
+    logger.info(`Update todo item`);
+    const item = await todosAccess.getTodo(todoId, userId);
 
-  if (item.userId !== userId) {
-    logger.error(`Update denied, not your todo`);
-    throw new Error("Update denied, not your todo");
+    if (item.userId !== userId) {
+      logger.error(`Can not update this item`);
+      throw new Error("Can not update this item");
+    }
+
+    return await todosAccess.updateTodo(todoId, updateTodoRequest, userId);
+  } catch (e) {
+    console.log(e);
   }
-
-  return await todosAccess.updateTodo(todoId, updateTodoRequest, userId);
 }
 
 export async function updateUrl(
@@ -63,31 +75,36 @@ export async function updateUrl(
   todoId: string,
   attachmentURL: string
 ) {
-  logger.info(
-    `Updating URL of ${todoId} with ${attachmentURL} for user ${userId}`
-  );
+  try {
+    logger.info(`Updating URL`);
 
-  const item = await todosAccess.getTodo(todoId, userId);
+    const item = await todosAccess.getTodo(todoId, userId);
 
-  if (item.userId !== userId) {
-    logger.error(`Update URL denied, not your todo`);
-    throw new Error("Update URL denied, not your todo");
+    if (item.userId !== userId) {
+      logger.error(`Failed to update url`);
+      throw new Error("Failed to update url");
+    }
+
+    return await todosAccess.updateUrl(todoId, attachmentURL, userId);
+  } catch (e) {
+    console.log(e);
   }
-
-  return await todosAccess.updateUrl(todoId, attachmentURL, userId);
 }
 
 export async function deleteTodo(userId: string, todoId: string) {
-  logger.info(`Deleting ${todoId} from ${userId}`);
+  try {
+    const item = await todosAccess.getTodo(todoId, userId);
 
-  const item = await todosAccess.getTodo(todoId, userId);
+    if (item.userId !== userId) {
+      logger.error(`Failed to delete item`);
+      throw new Error("Failed to delete item");
+    }
+    logger.info(`Deleting item`);
 
-  if (item.userId !== userId) {
-    logger.error(`Deletion denied, not your todo`);
-    throw new Error("Deletion denied, not your todo");
+    return await todosAccess.deleteTodo(todoId, userId);
+  } catch (e) {
+    console.log(e);
   }
-
-  return await todosAccess.deleteTodo(todoId, userId);
 }
 
 export const getUploadUrl = (attachmentId: string) =>

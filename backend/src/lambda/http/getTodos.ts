@@ -12,7 +12,7 @@ const logger = createLogger("getTodo");
 // TODO: Get all TODO items for a current user
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    logger.info(`Processing event: ${event}`);
+    logger.info(`Processing event`);
     const userId = getUserId(event);
     const items = await getTodos(userId);
 
