@@ -8,11 +8,10 @@ import { Jwt } from "../../auth/Jwt";
 import { JwtPayload } from "../../auth/JwtPayload";
 import * as util from "util";
 
-const logger = createLogger("auth");
-//const auth0Secret = process.env.Auth_0_Secret
-
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
+const logger = createLogger("auth");
+
 const jwksUrl = process.env.AUTH_0_JSON_WEB_KEY_SET_URL;
 
 export const handler = async (
@@ -58,7 +57,6 @@ export const handler = async (
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader);
 
-  // had to change from hs to rs. KEpt getting error newtwork error on api.
   const response = await Axios.get(jwksUrl);
   const jwks = response.data;
   const keys: any[] = jwks.keys;
