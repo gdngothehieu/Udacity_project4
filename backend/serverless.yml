@@ -24,8 +24,8 @@ provider:
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: s3-bucket-gdngothehieu-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
-    Auth_0_Secret: cdyRoWN3r30pu4j1Aqx4K5jaJ1QpZJSMCe94Zq242j2Fv5nxQOhfYr7ZC9y9HmLw
-    AUTH_0_JSON_WEB_KEY_SET_URL: https://dev-p8g3a2x0.us.auth0.com/.well-known/jwks.json
+    Auth_0_Secret: tdUydf6LH1SKExVhv-1v85Y_nSXxhBjj7gvS1Xv6Rmj3YBu-DnoSuKtZLlwCGd2U
+    AUTH_0_JSON_WEB_KEY_SET_URL: https://dev-mm0vvjb8.us.auth0.com/.well-known/jwks.json
 
   logs:
     restApi: true
