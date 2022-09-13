@@ -12,21 +12,25 @@ const logger = createLogger("generateUploadUrl");
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    const todoId = event.pathParameters.todoId;
+    try {
+      const todoId = event.pathParameters.todoId;
 
-    logger.info(`Processing event`);
-    const userId = getUserId(event);
-    const getUploadURLResponse = await getUploadUrl(todoId);
-    const attachmentId = getUploadURLResponse.split("?")[0];
+      logger.info(`Processing event`);
+      const userId = getUserId(event);
+      const getUploadURLResponse = await getUploadUrl(todoId);
+      const attachmentId = getUploadURLResponse.split("?")[0];
 
-    await updateUrl(userId, todoId, attachmentId);
+      await updateUrl(userId, todoId, attachmentId);
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        uploadUrl: getUploadURLResponse,
-      }),
-    };
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          uploadUrl: getUploadURLResponse,
+        }),
+      };
+    } catch (e) {
+      console.log(e);
+    }
   }
 );
 
