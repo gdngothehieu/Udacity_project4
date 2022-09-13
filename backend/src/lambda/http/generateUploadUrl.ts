@@ -3,42 +3,42 @@ import "source-map-support/register";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import * as middy from "middy";
 import { cors, httpErrorHandler } from "middy/middlewares";
-import { getPresignedImageUrl } from "../../helpers/todo";
-import { decodeJWTFromAPIGatewayEvent, parseUserId } from "../../auth/utils";
+//import { createAttachmentPresignedUrl } from '../../helpers/todos'
+import { getUploadUrl, updateUrl } from "../../helpers/todos";
+import { getUserId } from "../utils";
 import { createLogger } from "../../utils/logger";
-const logger = createLogger("todo");
-import * as uuid from "uuid";
+
+const logger = createLogger("generateUploadUrl");
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    console.log("Processing event: ", event);
     const todoId = event.pathParameters.todoId;
+    // // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
 
-    // TODO: Return a presigned URL to upload a file for a TODO item with the provided id
+    logger.info(`Processing event: ${event}`);
+    const userId = getUserId(event);
+    const Url = await getUploadUrl(todoId);
+    const attachmentId = Url.split("?")[0];
 
-    await getPresignedImageUrl(
-      todoId,
-      uuid.v4(),
-      parseUserId(decodeJWTFromAPIGatewayEvent(event))
-    );
+    logger.info(`Created upload URL ${Url}`);
 
-    logger.info("Created to do image URL", {
-      key: todoId,
-      userId: parseUserId(decodeJWTFromAPIGatewayEvent(event)),
-      imageId: uuid.v4(),
-    });
+    await updateUrl(userId, todoId, attachmentId);
 
     return {
       statusCode: 200,
-      body: "Successfully created new to do image URL",
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      },
+      body: JSON.stringify({
+        uploadUrl: Url, //item: Url
+      }),
     };
   }
 );
 
-handler
-  .use(
-    cors({
-      credentials: true,
-    })
-  )
-  .use(httpErrorHandler());
+handler.use(httpErrorHandler()).use(
+  cors({
+    credentials: true,
+  })
+);

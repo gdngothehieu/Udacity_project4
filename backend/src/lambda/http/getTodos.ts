@@ -2,37 +2,37 @@ import "source-map-support/register";
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import * as middy from "middy";
-import { cors, httpErrorHandler } from "middy/middlewares";
-import { getAllTodosForUser } from "../../helpers/todo";
-import { decodeJWTFromAPIGatewayEvent } from "../../auth/utils";
-import { parseUserId } from "../../auth/utils";
+import { cors } from "middy/middlewares";
+import { getTodos } from "../../helpers/todos";
+import { getUserId } from "../utils";
+import { createLogger } from "../../utils/logger";
 
+const logger = createLogger("getTodo");
+
+// TODO: Get all TODO items for a current user
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-    console.log("Processing event: ", event);
-    // TODO: Get all TODO items for a current user
-    const userId = parseUserId(decodeJWTFromAPIGatewayEvent(event));
-
-    const todos = await getAllTodosForUser(userId);
-
-    if (todos.count !== 0) {
-      return {
-        statusCode: 200,
-        body: "Users has a lot to dos",
-      };
-    }
+    // Write your code here
+    logger.info(`Processing event: ${event}`);
+    //const todos = event.pathParameters.todoId
+    const userId = getUserId(event);
+    const items = await getTodos(userId);
 
     return {
-      statusCode: 404,
-      body: "No to do items",
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Credentials": true,
+      },
+      body: JSON.stringify({
+        items,
+      }),
     };
   }
 );
 
-handler
-  .use(
-    cors({
-      credentials: true,
-    })
-  )
-  .use(httpErrorHandler());
+handler.use(
+  cors({
+    credentials: true,
+  })
+);

@@ -1,19 +1,21 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from "aws-lambda";
 import "source-map-support/register";
 
-import { verify, decode } from "jsonwebtoken";
+import { verify, decode } from "jsonwebtoken"; //--error decode not used
 import { createLogger } from "../../utils/logger";
 import Axios from "axios";
-import { JwtPayload } from "../../auth/JwtPayload";
 import { Jwt } from "../../auth/Jwt";
+import { JwtPayload } from "../../auth/JwtPayload";
+import * as util from "util";
+
 const logger = createLogger("auth");
+//const auth0Secret = process.env.Auth_0_Secret
 
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
 // To get this URL you need to go to an Auth0 page -> Show Advanced Settings -> Endpoints -> JSON Web Key Set
-
-// This one is the URL that can be used to get the jsonWebToken
-const jwksUrl = "https://dev-ztvtbpkl.eu.auth0.com/.well-known/jwks.json";
+//const jwksUrl = '...'//https://dev-p8g3a2x0.us.auth0.com/.well-known/jwks.json'
+const jwksUrl = process.env.AUTH_0_JSON_WEB_KEY_SET_URL;
 
 export const handler = async (
   event: CustomAuthorizerEvent
@@ -56,32 +58,25 @@ export const handler = async (
 };
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
-  // TODO: Implement token verification
-  // You should implement it similarly to how it was implemented for the exercise for the lesson 5
-  // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
   const token = getToken(authHeader);
 
+  // had to change from hs to rs. KEpt getting error newtwork error on api.
+  const response = await Axios.get(jwksUrl);
+  const jwks = response.data;
+  const keys: any[] = jwks.keys;
+  logger.info("jwks - " + util.inspect(jwks, false, null, true));
   const jwt: Jwt = decode(token, { complete: true }) as Jwt;
-  if (!jwt) {
-    throw new Error("invalid token");
-  }
-  const jsonWebTokens = await Axios.get(jwksUrl);
-
-  const signKey = jsonWebTokens.data.keys.filter((k) => {
-    return k.kid === jwt.header.kid;
-  })[0];
-
-  if (!signKey) {
-    throw new Error(
-      `Unable to find a signing key that matches '${jwt.header.kid}'`
-    );
-  }
-
-  const { x5Code } = signKey;
-
-  return verify(token, `*begin cert*\n${x5Code[0]}\n*end cert*`, {
+  const signingKey = keys.find((key) => key.kid === jwt.header.kid);
+  let certValue: string = signingKey.x5c[0];
+  certValue = certValue.match(/.{1,64}/g).join("\n");
+  const finalCertKey: string = `-----BEGIN CERTIFICATE-----\n${certValue}\n-----END CERTIFICATE-----\n`;
+  logger.info(
+    "finalCertKey - " + util.inspect(finalCertKey, false, null, true)
+  );
+  let jwtPayload: JwtPayload = verify(token, finalCertKey, {
     algorithms: ["RS256"],
   }) as JwtPayload;
+  return jwtPayload;
 }
 
 function getToken(authHeader: string): string {
