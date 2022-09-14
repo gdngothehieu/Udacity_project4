@@ -6,7 +6,6 @@ import { createLogger } from "../../utils/logger";
 import Axios from "axios";
 import { Jwt } from "../../auth/Jwt";
 import { JwtPayload } from "../../auth/JwtPayload";
-import * as util from "util";
 
 // TODO: Provide a URL that can be used to download a certificate that can be used
 // to verify JWT token signature.
@@ -56,21 +55,24 @@ export const handler = async (
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader);
-
   const response = await Axios.get(jwksUrl);
   const jwks = response.data;
   const keys: any[] = jwks.keys;
-  logger.info("jwks - " + util.inspect(jwks, false, null, true));
   const jwt: Jwt = decode(token, { complete: true }) as Jwt;
+
   const signingKey = keys.find((key) => key.kid === jwt.header.kid);
+
   let certValue: string = signingKey.x5c[0];
+
   certValue = certValue.match(/.{1,64}/g).join("\n");
-  const certKey: string = `${certValue}`;
-  logger.info("Cert key initialize");
-  let jwtVerify: JwtPayload = verify(token, certKey, {
+
+  const certifcationKey: string = `-----BEGIN CERTIFICATE-----\n${certValue}\n-----END CERTIFICATE-----\n`;
+
+  const jwtPayload: JwtPayload = verify(token, certifcationKey, {
     algorithms: ["RS256"],
   }) as JwtPayload;
-  return jwtVerify;
+
+  return jwtPayload;
 }
 
 function getToken(authHeader: string): string {
